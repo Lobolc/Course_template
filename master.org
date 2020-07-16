@@ -1,0 +1,764 @@
+#+TITLE: WoRkshop
+#+DATE: <2020-06-19 Fri>
+#+AUTHOR: Daniel Ballesteros-Chávez & Miguel López-Cruz
+#+EMAIL: danielyho@yahoo.com
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:nil toc:t todo:t |:t
+#+CREATOR: Emacs 24.5.1 (Org mode 8.2.10)
+#+DESCRIPTION:
+#+EXCLUDE_TAGS: noexport
+#+KEYWORDS:
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto
+#+OPTIONS: html-preamble:t html-scripts:t html-style:nil
+#+OPTIONS: html5-fancy:nil tex:t
+#+CREATOR: <a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.5.1 (<a href="http://orgmode.org">Org</a> mode 8.2.10)
+#+HTML_CONTAINER: div
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+INFOJS_OPT:
+#+LATEX_HEADER:
+
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://gitcdn.link/repo/ennaniux/R_Surveys/master/style01.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="style01.css"/>
+
+# - Daniel Ballesteros-Chávez                                                            danielyho@yahoo.com
+# - Duane West - Statistician, Special Projects Unit, Surveys Division                   dwest@statinja.gov.jm
+# - Ieesha Graham - Senior Statistician, Special Projects Unit, Surveys Division         igmcintosh@statinja.gov.jm
+# - Philone Mantock -  Unit Head, Special Projects Unit, Surveys Division                pmantock@statinja.gov.jm
+# - Natalee Simpson - Director, Surveys Division                                         nsimpson@statinja.gov.jm
+# - Amanda Lee - Statistician, Research, Design and Evaluation Division                  alee@statinja.gov.jm
+# - Alicia Moncrieffe - Statistician, Research, Design and Evaluation Division           amoncrieffe@statinja.gov.jm
+
+#+BEGIN_SRC emacs-lisp :exports none
+;; stop emacs asking for confirmation, for this buffer only
+(setq-local org-confirm-babel-evaluate nil)
+#+END_SRC
+
+#+RESULTS:
+
+
+* Introduction
+This Document contains some proposed methods to perform the data analysis for the Crime Victimisation Survey of Jamaica.
+
+We provide and describe a set of tools that are freely available, highly customisable, all open code that
+can  be adapted in accordance with the specific needs.
+
+We use R which is a free software environment for statistical computing and
+graphics. It is very popular among academic and statistician community.
+It runs on the commonly used systems UNIX-like, Windows and MacOS.
+
+Here we will run R from a UNIX-like system and we will use some commands directly
+into the R command console. 
+
+For more information on this software and how to install it in different operating systems you can go to the official website [[https://www.r-project.org/]].
+
+The structure of the document is as follows: Section 2 is devoted to the concept of working directory. It is here where the main difference between 
+operator systems appears, specially when specifying the  directories/files paths. Then in Section 3 we describe how to install the main packages to be used.
+Section 4 is devoted to describe different ways to read a data set. We provide a list of very basic commands in Section 5. We conclude the basic usage of R in Section 6
+where we give several examples of data frame manipulation. In section 7 we provide an example of how to use the Survey Package for a complex designed survey. Finally in 
+section 8 we describe the usage of the tools developed for the analysis.
+
+* The working directory.
+
+One of the first things we should get comfortable with is 
+specifying the directory were the program is supposed to 
+apply all the instructions and commands wear are providing.
+
+The command =getwd()= will print the path where
+the current R session is reading the files from:
+
+#+BEGIN_SRC R :results output :exports both :eval yes
+getwd()
+#+END_SRC
+
+#+RESULTS:
+: [1] "/home/daniel/Documents/org/norgtes/nDataAnalysis/WoRkshop"
+
+
+To change the working directory then we should use the command
+=setwd()= and provide the full path of the directory we want to
+work from
+
+#+BEGIN_SRC R :results output :exports both :eval yes
+setwd("/home/daniel/Documents/org/norgtes/nDataAnalysis/WoRkshop")
+#+END_SRC
+
+#+RESULTS:
+
+Once we have set our working directory, we can explore other features of R.
+
+We can start using R as calculator by typing directly into the command line
+
+#+BEGIN_SRC R :results output :exports both :eval yes
+4 * 3/ 2
+#+END_SRC
+
+#+RESULTS:
+: [1] 6
+
+
+#+BEGIN_SRC R :results output :exports both :eval yes
+print(3*3*3)
+#+END_SRC
+
+
+One should create and save a file into the working directory as =file_name.R=. This is a text file with commands
+that R takes and process. It is usually referred as /the script/ and we would like to re-use it and improve it. Later we can write =source("file_name.R")=
+into the command line and run all the instructions contained in the script. In general, one can also run a script from a different working directory by typing the following command in the
+R console
+
+#+BEGIN_SRC 
+source("path/file_name.R")
+#+END_SRC
+
+
+*Note*: In case you are using a Windows system, whenever a file or directory path appears, one should change the =/= by one of the characters =\= or =//=.
+
+* Installing Packages
+
+Packages are sets of tools that can be downloaded from different
+servers around the world. Different packages have different R functions for specific purposes.
+
+In this document we will be mainly using two packages: /foreign/ and /survey/.
+
+The foreign package allows R to read different data set files like .sav, .dbf, and other file extensions.
+
+For example, to install the package foreign we type in the console
+
+=install.packages("foreign")=
+
+this will provide a list of possible servers to choose from, and you
+can select one close to your location. Since in following
+sections we will use the package =survey=, we also make sure we have
+it installed:
+
+=install.packages("survey")=
+
+We observe that the behaviour of the /install/ feature  depends on the version of R we are using and the operator system.
+Also if we have admin privileges or the lack of it can influence the behaviour of this feature.
+
+
+Now, installing a package does not load the package, so we have to tell R to load these two packages.
+To do so, we ask R to look for the right packages in its library:
+
+#+BEGIN_SRC R :results output :exports both :session
+library("foreign")
+library("survey")
+#+END_SRC
+
+* Reading a data set from a file.
+
+Inside the =WoRkshop/Datasets/= directory we have a data stored in the file =TPer_Vic1.dbf=.
+In order to read this data set file we use the command =read.dbf=
+and we give the  path to the file. Also we will store it
+into the "Object" df as follows
+
+#+BEGIN_SRC R :results output :exports both :session
+df <- read.dbf("Datasets/TPer_Vic1.dbf")
+#+END_SRC
+
+#+RESULTS[1062a5321f9b5d8ee3ae65ceaf7800840b738be9]:
+
+Now we are able to ask R details about our objects, for instance, we can
+get know the type of object it is
+
+#+BEGIN_SRC R :results output :exports both :session
+class(df)
+#+END_SRC
+
+Now that we know that the object =df= is a data frame, we can
+get information about its dimension
+
+#+BEGIN_SRC R :results output :exports both :session
+dim(df)
+#+END_SRC
+here, the number of rows and number of columns are shown.
+
+We have created an object called =df=, and we can ask and keep
+track of the objects we are creating in the session with the command
+=ls()=, this will show a list of all the objects we have created in the current session
+
+#+BEGIN_SRC R :results output :exports both :session
+ls()
+#+END_SRC
+
+
+Many R objects have a ‘class’ attribute, in many cases it is implicit and given by
+one of "matrix"’, ‘"array", "integer", "functions", etc.
+In order to know this attribute we use the function =class=.
+
+
+We can create numeric vectors 
+#+BEGIN_SRC R :results output :exports both :session
+V  <-  c(3,4,4,5,6)
+W  <-  c(4,4,1,2,3)
+#+END_SRC
+and we can ask for their class, 
+
+#+BEGIN_SRC R :results output :exports both :session
+class(V) 
+#+END_SRC
+
+We can also compute the sum $V + W$
+
+#+BEGIN_SRC R :results output :exports both :session
+V + W
+#+END_SRC
+
+
+At this point it is important to understand how the missing values are managed 
+when we are performing an  arithmetic operation. Let
+#+BEGIN_SRC R :results output :exports both :session
+X  <- c( NA, 1,2,3,4)
+#+END_SRC
+
+
+Then the sum with missing values
+#+BEGIN_SRC R :results output :exports both :session
+X + V
+#+END_SRC
+gives a missing value in the first entry.
+
+Coming back to df, this is a data frame containing the information
+gathered from a questionnaire of the National Victimisation Survey 
+in Mexico. The name of the columns can be shown as follows:
+
+#+BEGIN_SRC R :results output :exports both :session
+names(df)
+#+END_SRC
+
+We can also do subsets of the data set in the following way
+#+BEGIN_SRC R :results output :exports both :session
+df[c(1,2,3),c(1,2,3,4)]
+#+END_SRC
+
+To select one column we use the dollar sign =$= after the data frame.
+We will select the variable "FAC\under{}ELE" which, in this example,
+is the variable of the weight for each interview according to the
+sampling design
+
+#+BEGIN_SRC R :results output :exports code :session
+df$FAC_ELE
+#+END_SRC
+
+
+When we do class(df$FAC\under{}ELE) one can see
+#+BEGIN_SRC R :results output :exports both :session
+class(df$FAC_ELE) 
+#+END_SRC
+here we are selecting the variable
+FAC\under{}ELE from the data frame =df= and asking the type of variable it is.
+In this case it is a factor type (which is similar to character).
+We will transform this into a numeric vector:
+first we create a new variable for df from an existing
+one, we change the factor type to character and finally to a numeric one.
+
+#+BEGIN_SRC R :results output :exports both :session
+df$NEWVAR  <-  as.numeric(as.character(df$FAC_ELE))
+#+END_SRC
+
+#+BEGIN_SRC R :results output :exports both :session
+class(df$NEWVAR)
+sum(df$NEWVAR)
+#+END_SRC
+
+
+Now we show a list of all the the objects we have created,
+and then we remove them all
+
+#+BEGIN_SRC R :results output :exports both :session
+ls()
+rm(list=ls())
+ls()
+#+END_SRC
+
+If we are working in our file =file_name.R= we can copy and paste
+the lines to read the dbf file again and store it into the object df, create the variable NEWVAR
+and keep editing the file without loosing the work done previously.
+
+#+BEGIN_SRC R :results output :exports both :session
+df <- read.dbf("Datasets/TPer_Vic1.dbf")
+df$NEWVAR  <-  as.numeric(as.character(df$FAC_ELE))
+#+END_SRC
+
+We can select two more variable and get the
+frequency table for each of them
+
+#+BEGIN_SRC R :results output :exports both :session
+table(df$NOM_ENT)
+table(df$AP4_3_3)
+#+END_SRC
+
+We can use NEWVAR to create a weighted form of the previous table by using the function tapply.
+#+BEGIN_SRC R :results output :exports both :session
+tapply(df$NEWVAR,df$AP4_3_3,sum)
+#+END_SRC
+
+The family apply is a very popular and powerful collection of tools that
+substitute the usual =for= loop in programming. 
+
+We can also add another variable in this function
+say, the name of the provinces
+#+BEGIN_SRC R :results output :exports both :session
+tapply(df$NEWVAR,list(df$NOM_ENT,df$AP4_3_3),sum)
+#+END_SRC
+
+#+RESULTS:
+: Error in df$NOM_ENT : object of type 'closure' is not subsettable
+
+* Summary of commands
+
+1) getwd()
+2) setwd()
+3) install.packages()
+4) library()
+5) df <- read.dbf()
+6) df$NAME
+7) dim(df)
+8) class(df)
+9) ls()
+10) rm(list=ls())
+11) sum(df$NAME)
+12) as.numeric()
+13) as.character()
+14) df$NEWVAR <- df$NAME
+15) table()
+16) tapply, sapply, lapply, etc.
+
+* Creating a data frame
+
+# Thu 26 Mar 19:44:40 CET 2020
+
+** Create a data frame by direct input
+
+Now we will create a small data frame 
+#+BEGIN_SRC R :results output :exports both :session
+df  <- data.frame(
+    "Names" =  c("Alicia","Philone", "Duane", "Daniel","Luisa", "Ieesha"),
+    "Scores" = c(22,23,5,6,0, 3),
+    "Values" = c(1,2,NA,3,NA,0))
+#+END_SRC
+
+As you can notice, we have to specify the name of each column vector
+
+** Read a data frame from Excel
+
+A very useful feature is 
+#+BEGIN_SRC R :results output :exports code 
+df2 <- read.table(file = "clipboard", sep = "\t", header=TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+** Row and column binding
+
+Now we will do some basic operations with two data frames,
+first define:
+
+#+BEGIN_SRC R :results output :exports both :session
+df3  <-  data.frame("Names"=c("John"),
+                    "Scores"= c(22),
+                    "Values"=c(3))
+#+END_SRC
+
+Then we  will add to df, the data frame df3 as a new row
+as follows
+
+#+BEGIN_SRC R :results output :exports both :session
+df4  <- rbind(df,df3)
+#+END_SRC
+
+#+RESULTS:
+: Error in rbind(df, df3) : object 'df3' not found
+
+Another example. We create a (one column) data frame
+
+#+BEGIN_SRC R :results output :exports both :session
+df5  <-  data.frame("ID" = c(1:7))
+#+END_SRC
+
+#+RESULTS:
+
+Then we can do a column bind of two data frames:
+
+#+BEGIN_SRC R :results output :exports both :session
+df6  <-  cbind(df4,df5)
+#+END_SRC
+
+#+RESULTS:
+: Error in cbind(df4, df5) : object 'df4' not found
+
+** Exploring the data frame
+
+Selecting columns of the data frame
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[,2] ## This is a way to select the second column
+#+END_SRC
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[,c(2,4)] ## This is a way of selection the second and the fourth column
+#+END_SRC
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[,c("ID","Names")]
+#+END_SRC
+
+Selecting rows of the data frame
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[1,]
+#+END_SRC
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[c(1,3),]
+#+END_SRC
+
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[c(2,7),c("ID","Names")]
+#+END_SRC
+
+Logical expressions to select rows (filtering)
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[df6$Scores %in% c(22,23),]
+#+END_SRC
+
+
+We will create a new column for df6,
+with values 0 or 1, depending on the last
+logical sentence, recall we can do it as
+
+#+BEGIN_SRC R :results output :exports both :session
+df6$NVAR  <- ifelse(df6$Scores%in%c(22,23),1,0)
+df6
+#+END_SRC
+
+Delete a column from a data frame
+
+#+BEGIN_SRC R :results output :exports both :session
+df6[,-c(5)]
+#+END_SRC
+
+Understanding the apply function. We will perform
+the sum by rows of the columns Scores
+and Values
+
+#+BEGIN_SRC R :results output :exports both :session
+result1  <- apply(
+    df6[,c("Scores","Values")],
+    1, # 1 is for rows and 2 for columns
+    sum)
+result1
+#+END_SRC
+treat NA's as 0's then you have to do
+
+#+BEGIN_SRC R :results output :exports both :session
+result2  <- apply(
+    df6[,c("Scores","Values")],
+    1, # 1 is for rows and 2 for columns
+    function(x)sum(x,na.rm=TRUE) )
+result2
+#+END_SRC
+
+we can also do apply to perform operations by columns
+
+#+BEGIN_SRC R :results output :exports both :session
+result3  <- apply(
+    df6[,c("Scores","Values")],
+    2, # 1 is for rows and 2 for columns
+    function(x)sum(x,na.rm=TRUE))
+result3
+#+END_SRC
+
+Understanding tapply function
+
+#+BEGIN_SRC R :results output :exports both :session
+result4  <- tapply(
+    df6$Scores,
+    df6$NVAR,
+    sum)
+result4
+#+END_SRC
+
+* The Survey Package
+
+The "survey" package provides facilities in R for analysing data from complex surveys. 
+Through the rest of these notes we assume that the reader is familiar with the basic concepts of multi-stage sampling designs,
+PSU or Primary Sampling Unit and Strata as a partition of the population into homogeneous subgroups before sampling.
+
+An extraordinary source of information regarding the package can be found in this link [[http://r-survey.r-forge.r-project.org/survey/]].
+
+** Example
+ The file TPer\under{}Vic1.dbf contains the answers of a questionnaire for the National Crime Victimisation Survey in Mexico. The variable =AP4_3_3= corresponds to the question: HOW WOULD YOU SAY YOU FEEL LIVING IN YOUR STATE? And the answers are: 1 Safe, 2 Unsafe, 9 Does not know/Does not answer.
+ This is a complex survey with stratification and clusters. The PSUs are encoded in =UPM_DIS= and the strata in =EST_DIS=. The corresponding weight extrapolating to the population of study is FAC\under{}ELE.
+
++ Create a script in our working directory called script01.R.
++ Read the file TPer\under{}Vic1.dbf from the folder Datasets.
++ Using tapply compute the total values (weighted sum) for each of the answers in =AP4_3_3=. 
++ Get the total population that answered the question.
++ Compute the percentages for each of the answers in =AP4_3_3=.
+Hint: In this data set the weights for some reason are not in numeric form, you may have to use something like 
+df$FAC\under{}ELE  <-  as.numeric(as.character(df$FAC\under{}ELE))
+before start the computations.
+
+
+** Solution
+#+BEGIN_SRC R :results output :exports both :session
+library(foreign)  # We Need This Library to read dbf files
+df  <- read.dbf("./Datasets/TPer_Vic1.dbf")   ## read the data frame TperVic1.dbf
+df$FAC_ELE  <-  as.numeric(as.character(df$FAC_ELE))  # using the hint
+tapply(df$FAC_ELE, df$AP4_3_3,sum)     # tapply computes the weighted sum
+sum(tapply(df$FAC_ELE, df$AP4_3_3,sum)) # we can do a sum over the results of tapply
+## Note that is the same as sum(df$FAC_ELE).
+(tapply(df$FAC_ELE, df$AP4_3_3,sum) / sum(df$FAC_ELE)) * 100 # Compute the percentage as the ratio times 100.
+#+END_SRC
+
+
+ In the following we will get our hands into computing some totals, means and ratio estimators for complex surveys. We will use
++ tapply
++ mydesign
++ svytotal
++ svymean 
++ svyratio 
+ And we will make use of some of the basic commands we’ve learnt.
+
+First we write in our file.R the preamble, where we call the libraries we will need so don’t forget about loading the packages:
+#+begin_src R :results output :exports both :session
+library(foreign)  # We need this library to read dbf files
+library(survey)  # We need this use the package’s function
+df  <- read.dbf("./Datasets/TPer_Vic1.dbf")   ## read the data frame TperVic1.dbf
+df$FAC_ELE  <-  as.numeric(as.character(df$FAC_ELE))  # using the hint
+#+end_src
+
+We will use the PSU, strata, data set and weights to define the survey design of our data frame and store it into an object called mydesign:
+
+#+begin_src R :results output :exports both :session
+mydesign  <- svydesign(ids=~UPM_DIS,strata=~EST_DIS,data=df,weights=~FAC_ELE)
+mydesign
+#+end_src
+
+To obtain the total estimator we now use the function svytotal:
+
+Note that in addition to the total estimators R also prints the Standard Error.
+
+
+To obtain the mean estimator we now use the function svymean:
+
+#+begin_src R :results output :exports both :session
+svymean(x=~AP4_3_3,mydesign)
+#+end_src
+
+Where again we also have the Standard Error.
+
+A Word of Warning.
+
+
+Note that we obtained a grouped results by values of =AP4_3_3=. This happens only because the values of =AP4_3_3= are not stored as numeric, but as a character (factor) value.
+Please discuss this result:
+
+#+begin_src R :results output :exports both :session
+df$AP4_3_3  <-  as.numeric(as.character(df$AP4_3_3))
+mydesign  <- svydesign(ids=~UPM_DIS,strata=~EST_DIS,data=df,weights=~FAC_ELE)
+svytotal(x=~AP4_3_3,mydesign)
+#+end_src
+
+There is another function called svyratio, which will allow us to compute different quotients. Just as an illustration we can compute the same as svvymean. Unfortunately svyratio is not good at handling several values, so what I usually do is to define indicator variables:
+
+#+begin_src R :results output :exports both :session
+df$Num  <- ifelse(df$AP4_3_3%in%1,1,0) ## Only answer 1 will be counting
+df$Den  <- 1   ## All population as denominator
+mydesign  <- svydesign(ids=~UPM_DIS,strata=~EST_DIS,data=df,weights=~FAC_ELE) ## update your design
+svyratio(numerator=~Num,denominator=~Den,mydesign) 
+#+end_src
+
+Now we can also group our results using an additional variable. The
+gender of the person answering the interview is stored in the variable
+SEXO which has the values 1 for male and 2 for female. Now we can
+obtain the estimates group by gender as follows
+#+begin_src R :results output :exports both :session
+svyby(~Num,by=~SEXO,mydesign,svytotal) 
+svyby(~Num,by=~SEXO,mydesign,svymean)  
+svyby(~Num,denominator=~Den,by=~SEXO,mydesign,svyratio)
+#+end_src
+
+#+RESULTS:
+:   SEXO     Num       se
+: 1    1 8848874 119701.3
+: 2    2 7338350 109648.9
+:   SEXO       Num          se
+: 1    1 0.2218758 0.002831137
+: 2    2 0.1612818 0.002322312
+:   SEXO   Num/Den  se.Num/Den
+: 1    1 0.2218758 0.002831137
+: 2    2 0.1612818 0.002322312
+
+Please note that we are using as denominator the whole population and not only the male population, then the percentages are not expected to add up to 100%
+
+* Proposed syntax
+
+Now that we have the basics of the Survey Package, here you will find a proposed procedure
+to perform the data analysis. 
+
+In this section we describe step by step the content of 
+the  script  [[./estimate_basic_syntax.R]] which can be taken as a basis
+to perform the data analysis from the survey data base.
+
+
+
+** The preamble.
+
+The first part of the program starts as
+
+#+begin_src R
+rm(list=ls())
+
+library(survey)
+library(foreign)
+source("./Funcion_TEV03.R")
+#+end_src
+
++ First it clears all previous information from the R session.
++ The following two lines load the libraries "survey" and "foreign".
++ The file [[./Funcion_TEV03.R]] contains survey-based functions called
+  T.estimator, M.estimator and R.estimator. These are bases in svyby,
+  svytotal, svymean and svyratio. You can also find it and follow any
+  update in the github repository
+  [[https://github.com/ennaniux/R_Surveys/blob/master/Funcion_TEV03.R]]
+		  
+
+
+** Define the data set structure:
+
+In the following lines, we rename some variables we will use. For instance we use W for the weight, 
+PSU for the primary sampling units or clusters and STR for the strata:
+
+#+begin_src R
+df  <- read.dbf("./Datasets/TPer_Vic1.dbf")   ## read the data frame form the file TperVic1.dbf
+
+## Definition of the weights
+## Only in the case of this file we have to chage the weights from factor to numeric values:
+df$W  <- as.numeric(as.character(df$FAC_ELE))
+
+## Definition of  PSU
+df$PSU  <- df$UPM_DIS
+
+## Definitinon of Strata
+df$STR  <-  df$EST_DIS
+
+## Definition of the LEVELS
+df$LEVELS  <-  df$NOM_ENT
+
+#+end_src
+
+
+** The Variable to be analysed.
+
+We are usually interested in giving a ratio estimate, i.e. an estimate of the percentage of the population with
+certain characteristic. This is why we always include the denominator part of the estimate.
+In the lines of code
+
+#+begin_src R
+varnames  <- c("AP4_3_3")
+codes  <- c(1,2,9)
+
+denovarnames  <- c("AP4_3_3")
+denocodes  <- c(1,2,9)
+#+end_src
+
+You have to consider the following:
++ For the variable ~AP4_3_3~ an estimate for each of the values in ~codes~ will be produced.
++ The denominator to be consider consist of the  ~AP4_3_3~ whose value is one of the options listed in ~denocodes~.
+
+** The estimates
+
+This is the core of the procedure
+
+#+begin_src R
+## Denominators
+denominators  <- Variable.creation(var.names=denovarnames,var.values=denocodes,data.set=df,label="Deno00")
+df  <- XX.result
+mydesign  <-  svydesign(id=~PSU,strata=~STR,data=XX.result,weight=~W)
+TT  <-  lapply(denominators,function(x) T.estimator(x,"LEVELS",mydesign))
+
+#Totals
+YY  <- lapply(codes,function(i){
+Variable.creation(var.names=varnames,var.values=i,data.set=df,label=paste0("0",i))
+
+mydesign  <-  svydesign(id=~PSU,strata=~STR,data=XX.result,weight=~W)
+result.total  <-  lapply(XX.newnames,function(x) T.estimator(x,"LEVELS",mydesign))
+})
+
+#Ratios
+ZZ  <- lapply(codes,function(i){
+Variable.creation(var.names=varnames,var.values=i,data.set=df,label=paste0("0",i))
+
+mydesign  <-  svydesign(id=~PSU,strata=~STR,data=XX.result,weight=~W)
+result.means  <-  lapply(XX.newnames,function(x) R.estimator(x,denominators[which(XX.newnames%in%x)],"LEVELS",mydesign))
+
+})
+#+end_src
+
+#+RESULTS:
+
+This part relies strongly in our dependency file.
+
++ The function *Variable.creation* is used to create binary vectors (indicator vectors). With default values it is equivalent to the line ~df$variable.var.names.00 <- ifelse(df$var.names%in%var.values,1,0)~.
++ The object ~TT~ contains the total estimate for the denominator defined in ~denovarnames~.
++ The object ~YY~ contains the total estimate for each option for the variables defined in  ~varnames~.
++ The object ~ZZ~ contains the ratio estimate for each option for the variables defined in  ~varnames~ with respect to ~denovarnames~.
+
+
+
+** Printing procedure
+
+This is the last part of the analysis, and it is still under development. We export our results into a human-readable format.
+We choose CSV extension for convenience, since it can  also be open by the spread-sheet software.
+
+#+begin_src 
+## Printing procedure
+Out  <-  data.frame(TT,YY,ZZ)
+
+## --- Print Results:
+write.csv(Out,"./outputs/Estimate_Output.csv")
+#+end_src
+
+
+Here you can see the output with all the information generated
+file:./outputs/Estimate_Output.csv
+
+** Further usage: Several variables with same denominator.
+
+ If several variables have the same denominator, then one can 
+ define =varnames= and =denovarnames= as
+
+ #+begin_src
+ varnames  <- c("variable_1","variable_2","variable_3")
+ codes  <- c(1,2,9)
+
+ denovarnames  <- rep("denominator",length(varnames))
+ denocodes  <- c(1,2,9)
+ #+end_src
+
+** Further usage: Several Variables with corresponding denominators with common codes
+
+ #+begin_src
+ varnames  <- c("variable_1","variable_2","variable_3")
+ codes  <- c(1,2,9)
+
+ denovarnames  <- rep("denominator_1","denominator_2","denominator_3")
+ denocodes  <- c(1,2,9)
+ #+end_src
+
+
+
+
